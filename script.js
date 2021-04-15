@@ -1,79 +1,87 @@
 const classNames = {
-    TODO_ITEM: 'todo-container',
-    TODO_CHECKBOX: 'todo-checkbox',
-    TODO_TEXT: 'todo-text',
-    TODO_DELETE: 'todo-delete',
-  }
-  
-  
-  const list = document.getElementById('todo-list')
-  const itemCountSpan = document.getElementById('item-count')
-  const uncheckedCountSpan = document.getElementById('unchecked-count')
-  
-  let tarea = '';
+  TODO_ITEM: 'todo-container',
+  TODO_CHECKBOX: 'todo-checkbox',
+  TODO_TEXT: 'todo-text',
+  TODO_DELETE: 'todo-delete',
+}
 
-  function addTodo() {
-    
-    tarea = prompt("Que tarea deseas agregar?")
-    if(tarea !==  null && tarea.trim().length > 0){
-      
-      let elemento = crearInput(tarea);
-      let nuevoLi = crearLi(tarea);
 
-      nuevoLi.prepend(elemento);
-      addElement (nuevoLi);
+const list = document.getElementById('todo-list')
+const itemCountSpan = document.getElementById('item-count')
+const uncheckedCountSpan = document.getElementById('unchecked-count')
 
-      actualizaContadores();
+let tTotal = 0;
+let tPendientes = 0;
+
+function addTodo() {
+  
+ let nombreTarea = prompt("Que tarea deseas agregar?")
+  
+ if(nombreTarea){
+    let tarea = crearTarea(nombreTarea);
+
+    if(tarea){
+      tTotal++;
+      tPendientes++;
     }
-
+    list.appendChild(tarea);
+    renderizarContadores();
   }
 
-  function addElement (titulo) {
-    list.appendChild(titulo);
-  }
+}
 
-  function crearInput(name){
-    let newInput = document.createElement('INPUT');
-    newInput.setAttribute("type","checkbox");
-    newInput.setAttribute("value","valor_checkbox");
-    newInput.setAttribute("id",name);
-    newInput.className += classNames.TODO_CHECKBOX;
-    newInput.setAttribute("onclick","actualizaContadores()");
-    newInput.checked = true;
-    return newInput;
-  }
-
-  function crearLi(texto){
-    let li = document.createElement("li");
-    li.innerText = texto;
-    return li;
-  }
-
-  function actualizaContadores(){
-    updateItemCount()
-    updateUncheckedCount()
-  }
+function crearTarea(name){
+  const checkbox = document.createElement('INPUT');
+  checkbox.setAttribute("type","checkbox");
+  checkbox.onchange = cambioCheckbox;
+  checkbox.className = classNames.TODO_CHECKBOX;
   
-  function updateItemCount(){
-    let items = document.getElementsByClassName(classNames.TODO_CHECKBOX);
-    let contador = 0;
+  const span = document.createElement('span');
+  span.className = classNames.TODO_TEXT;
+  span.setAttribute('editable', true)
+  span.innerHTML = name;
 
-    for(let i = 0; i < items.length; i++){
-      if(items[i].checked){
-        contador++
-      }
-    }
-    itemCountSpan.innerText = contador;
+  const eliminar = document.createElement('button');
+  eliminar.className = classNames.TODO_DELETE;
+  eliminar.innerHTML = 'X';
+  eliminar.onclick = eliminarTarea;
+
+  const li = document.createElement('li');
+  li.className = classNames.TODO_ITEM
+  li.appendChild(checkbox);
+  li.appendChild(span);
+  li.appendChild(eliminar);
+
+  return li
+}
+
+function estaOncheck(elemento){
+  return elemento.checked;
+}
+
+function cambioCheckbox(){
+  if(estaOncheck(this)){
+    tPendientes--
+  }else{
+    tPendientes++
   }
+  renderizarContadores();
+}
 
-  function updateUncheckedCount(){
-    let items = document.getElementsByClassName(classNames.TODO_CHECKBOX);
-    let contador = 0;
+function eliminarTarea(){
+  const parent = this.parentNode;
+  const checkbox = parent.firstElementChild;
 
-    for(let i = 0; i < items.length; i++){
-      if(!items[i].checked){
-        contador++
-      }
-    }
-    uncheckedCountSpan.innerText = contador;
+  if(!estaOncheck(checkbox)){
+    tPendientes--
   }
+  tTotal--
+  parent.remove();
+
+  renderizarContadores()
+}
+
+function renderizarContadores(){
+  itemCountSpan.innerHTML = tTotal.toString();
+  uncheckedCountSpan.innerHTML = tPendientes.toString();
+}
